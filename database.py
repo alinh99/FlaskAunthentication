@@ -11,3 +11,12 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=False)
     address = db.Column(db.String)
     phone_number = db.Column(db.String)
+    email = db.Column(db.String, unique=True, nullable=False)
+
+class ForgotPassword(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    user = db.relationship("User")
+    otp = db.Column(db.Integer)
+    is_confirmed_otp = db.Column(db.Boolean)
+    expired_in = db.Column(db.DateTime)

@@ -4,3 +4,4 @@ __pycache__/
 /*_session/
 .idea/
 .vscode/
+.env
