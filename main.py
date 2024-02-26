@@ -7,7 +7,7 @@ from otp_sending import generate_otp, expire_time
 app = Flask(__name__)
 
 # configure the SQLite database, relative to the app instance folder
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
 
 # initialize the app with the extension
 db.init_app(app)
@@ -43,6 +43,8 @@ def register():
         phone_number=request.form.get("phone_number", "")
         email = request.form.get("email", "")
 
+        data = resgister_validation(user_name, password, first_name, last_name, email)
+        
         # Write data into database
         if request.method == "POST":
             user = User(
@@ -55,9 +57,11 @@ def register():
                 phone_number=phone_number,
                 email=email,
             )
-            db.session.add(user)
-            db.session.commit()
-        data = resgister_validation(user_name, password, first_name, last_name, email)
+
+            if data.json["success"] != False:
+                db.session.add(user)
+                db.session.commit()
+                
         return data.json
     except Exception as e:
         return str(e)
@@ -82,10 +86,12 @@ def forgot_password():
         is_confirmed_otp=is_confirmed_otp,
         expired_in=expired_in
     )
-    db.session.add(user_forgot)
-    db.session.commit()
-    
+
     data = forgot_password_validation(email, user_id)
+    
+    if data.json["success"] != False:
+        db.session.add(user_forgot)
+        db.session.commit()
     
     return data.json
 

@@ -5,25 +5,33 @@ from otp_sending import send_email
 
 def resgister_validation(user_name, password, first_name, last_name, email):
     # User validation
-    if  db.session.query(db.exists().where(User.user_name == user_name)).scalar():
+    if db.session.query(db.exists().where(User.user_name == user_name)).scalar():
         return jsonify({
             "message": "This User Name is existed",
             "success": False
         })
 
-    if  db.session.query(db.exists().where(User.email == email)).scalar():
+    if db.session.query(db.exists().where(User.email == email)).scalar():
         return jsonify({
             "message": "This Email is existed",
             "success": False
         })
+    
     if user_name == "":
         return jsonify({
             "message": "User Name cannot be empty",
             "success": False
         })
+    
     if password == "":
         return jsonify({
             "message": "Password cannot be empty",
+            "success": False
+        })
+    
+    if email == "":
+        return jsonify({
+            "message": "Email cannot be empty",
             "success": False
         })
     
@@ -44,7 +52,8 @@ def resgister_validation(user_name, password, first_name, last_name, email):
             "message": "Length of User Name is not less than 4 characters",
             "success": False
         })
-    if len(password) <= 9:
+    
+    if len(password) < 8:
         return jsonify({ 
             "message": "Length of password cannot be less than 8 characters",
             "success": False
