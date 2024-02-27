@@ -1,6 +1,6 @@
 import random
 from datetime import datetime, timedelta
-from database import ForgotPassword
+from database import User
 import smtplib
 import os
 from email.mime.multipart import MIMEMultipart
@@ -15,27 +15,28 @@ def generate_otp():
     return random.randrange(100000, 999999)
 
 def expire_time():
-    return datetime.now() + timedelta(days=1)
+    return datetime.now() + timedelta(minutes=30)
 
 def expire_time_convert_to_hour():
     time = int((expire_time() - datetime.now()).total_seconds() / 3600)
     return time
 
 def get_user_id():
-    user_id = ForgotPassword.query.first()
+    user_id = User.query.first()
     return user_id
 
 def get_email_by_user_id():
     user_id = get_user_id()
-    email = user_id.user.email
+    email = user_id.email
     return email
 
 def get_name_by_user_id():
     user_id = get_user_id()
-    full_name = user_id.user.last_name + user_id.user.first_name
+    full_name = user_id.last_name + user_id.first_name
     return full_name
 
 otp = generate_otp()
+expired_in = expire_time()
 
 def email_template():
     full_name = get_name_by_user_id()

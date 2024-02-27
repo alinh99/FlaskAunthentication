@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from database import User, db, ForgotPassword
-from validation import resgister_validation, login_validation, forgot_password_validation
-from otp_sending import otp, expire_time
+from validation import resgister_validation, login_validation, forgot_password_validation, forgot_password_verification_validation
+from otp_sending import otp, expired_in
 
 # create the app
 app = Flask(__name__)
@@ -68,33 +68,68 @@ def register():
 
 @app.route("/user/forgot-password", methods=["GET", "POST"])
 def forgot_password():
-    email = request.form.get("email", "")
-    user_id = db.session.query(User).filter_by(email=email).first()
+    try:
+        email = request.form.get("email", "")
+        user = db.session.query(User).filter_by(email=email).first()
+        
+        if user is None:
+            return jsonify({
+                "message": "Email does not exist in our database. Please register your email.",
+                "success": False
+            })
 
-    user_id = user_id.id
-    is_confirmed_otp = False
-    expired_in = expire_time()
+        user_id = user.id
+        is_confirmed_otp = False
+        user_forgot = db.session.query(ForgotPassword).filter_by(user_id=user_id).first()
+        data = forgot_password_validation(email, user_id)
 
-    user_forgot = ForgotPassword(
-        user_id=user_id,
-        otp=otp,
-        is_confirmed_otp=is_confirmed_otp,
-        expired_in=expired_in
-    )
-
-    data = forgot_password_validation(email, user_id)
-    
-    if data.json["success"] != False:
-        db.session.add(user_forgot)
+        if user_forgot:
+            user_forgot.otp = otp
+            user_forgot.expired_in = expired_in
+        else:
+            user_forgot = ForgotPassword(
+                user_id=user_id,
+                otp=otp,
+                is_confirmed_otp=is_confirmed_otp,
+                expired_in=expired_in
+            )
+            if data.json["success"] != False:
+                db.session.add(user_forgot)
+        
         db.session.commit()
-    
-    if not hasattr(user_id, "id"):
-        return jsonify({
-            "message": "Email does not exist in our database. Please register your email.",
-            "success": False
-        })
-    
-    return data.json
+        
+        return data.json
+    except Exception as e:
+        return str(e)
+
+@app.route("/user/reset-password", methods=["GET", "POST"])
+def reset_password():
+    try:
+        otp = int(request.form.get("otp", ""))
+        new_password = request.form.get("password", "")
+        
+        user_forgot = db.session.query(ForgotPassword).filter_by(otp=otp).first()
+        user_id = db.session.query(User).first()
+        
+        data = forgot_password_verification_validation(otp, expired_in, new_password)
+        
+        if user_forgot is None:
+            return jsonify({
+                "message": "The OTP is expired or invalid. Please check again.",
+                "success": False
+            })
+        
+        if data.json["success"] != False:
+            user_id.password = new_password
+            user_forgot.is_confirmed_otp = True
+            
+        db.session.delete(user_forgot)
+        db.session.commit()
+        
+        return data.json
+
+    except Exception as e:
+        return str(e)
 
 if __name__ == '__main__':
     app.run(debug=True)
