@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from database import User, db, ForgotPassword
 from validation import resgister_validation, login_validation, forgot_password_validation
-from otp_sending import generate_otp, expire_time
+from otp_sending import otp, expire_time
 
 # create the app
 app = Flask(__name__)
@@ -70,13 +70,8 @@ def register():
 def forgot_password():
     email = request.form.get("email", "")
     user_id = db.session.query(User).filter_by(email=email).first()
-    if not hasattr(user_id, "id"):
-        return jsonify({
-            "message": "Email does not exist in our database. Please register your email.",
-            "success": False
-        })
+
     user_id = user_id.id
-    otp = generate_otp()
     is_confirmed_otp = False
     expired_in = expire_time()
 
@@ -92,6 +87,12 @@ def forgot_password():
     if data.json["success"] != False:
         db.session.add(user_forgot)
         db.session.commit()
+    
+    if not hasattr(user_id, "id"):
+        return jsonify({
+            "message": "Email does not exist in our database. Please register your email.",
+            "success": False
+        })
     
     return data.json
 

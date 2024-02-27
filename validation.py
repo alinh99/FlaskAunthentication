@@ -1,7 +1,7 @@
 from database import db
 from flask import jsonify
 from database import User
-from otp_sending import send_email
+from otp_sending import send_email, otp
 
 def resgister_validation(user_name, password, first_name, last_name, email):
     # User validation
@@ -135,5 +135,5 @@ def forgot_password_validation(email, user_id):
     send_email()
     return jsonify({
         "message": "The OTP is sent successfully to your email. Please check it.",
-        "success": True
+        "success": True,
     })

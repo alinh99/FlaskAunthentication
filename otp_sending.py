@@ -18,7 +18,6 @@ def expire_time():
     return datetime.now() + timedelta(days=1)
 
 def expire_time_convert_to_hour():
-
     time = int((expire_time() - datetime.now()).total_seconds() / 3600)
     return time
 
@@ -36,9 +35,10 @@ def get_name_by_user_id():
     full_name = user_id.user.last_name + user_id.user.first_name
     return full_name
 
+otp = generate_otp()
+
 def email_template():
     full_name = get_name_by_user_id()
-    otp = generate_otp()
     hour = expire_time_convert_to_hour()
     message = f"""\
         <html>
