@@ -15,8 +15,6 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-
-print()
 @app.route("/user/login", methods=["GET", "POST"])
 def login():
     try:

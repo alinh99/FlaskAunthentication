@@ -67,29 +67,30 @@ def resgister_validation(user_name, password, first_name, last_name, email):
 
 def login_validation(user_name, password, email):
     # User validation
-    if not db.session.query(db.exists().where(User.user_name == user_name)).scalar():
+    if user_name != "" and not db.session.query(db.exists().where(User.user_name == user_name)).scalar():
         return jsonify({
             "message": "User name does not exist. Please check again.",
             "success": False
         })
 
-    if not db.session.query(db.exists().where(User.email == email)).scalar():
+    if email != "" and not db.session.query(db.exists().where(User.email == email)).scalar():
         return jsonify({
             "message": "Email does not exist. Please check again.",
             "success": False
         })
     
-    if db.session.query(db.exists().where(User.user_name == user_name)).scalar() and not db.session.query(db.exists().where(User.password == password)).scalar():
+    if user_name != "" and db.session.query(db.exists().where(User.user_name == user_name)).scalar() and not db.session.query(db.exists().where(User.password == password)).scalar():
         return jsonify({
             "message": "Your password is wrong. Please check again.",
             "success": False
         })
 
-    if user_name == "":
+    if user_name == "" and email == "":
         return jsonify({
-            "message": "User Name cannot be empty. Please check again.",
+            "message": "User Name/Email cannot be empty. Please check again.",
             "success": False
         })
+    
     if password == "":
         return jsonify({
             "message": "Password cannot be empty. Please check again.",
