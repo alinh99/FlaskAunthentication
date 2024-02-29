@@ -66,9 +66,7 @@ def email_template():
     """
     return message
 
-def send_email():
-    recepient_email = get_email_by_user_id()
-    
+def send_email(recepient_email):    
     mail=smtplib.SMTP(SMTP_SERVER, PORT)
     msg = MIMEMultipart('alternative')
     msg["Subject"] = "OTP for NHL's Flask"

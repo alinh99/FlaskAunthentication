@@ -67,6 +67,8 @@ def resgister_validation(user_name, password, first_name, last_name, email):
 
 def login_validation(user_name, password, email):
     # User validation
+    user = User.query.filter_by(
+            user_name=user_name).first()
     if user_name != "" and not db.session.query(db.exists().where(User.user_name == user_name)).scalar():
         return jsonify({
             "message": "User name does not exist. Please check again.",
@@ -79,7 +81,7 @@ def login_validation(user_name, password, email):
             "success": False
         })
     
-    if user_name != "" and db.session.query(db.exists().where(User.user_name == user_name)).scalar() and not db.session.query(db.exists().where(User.password == password)).scalar():
+    if user.password != password:
         return jsonify({
             "message": "Your password is wrong. Please check again.",
             "success": False
@@ -132,14 +134,14 @@ def forgot_password_validation(email, user_id):
             "success": False
         })
     
-    send_email()
+    send_email(email)
     
     return jsonify({
         "message": "The OTP is sent successfully to your email. Please check it.",
         "success": True,
     })
 
-def forgot_password_verification_validation(otp, expired_time, new_password):
+def forgot_password_verification_validation(otp, new_password):
     if otp == "":
         return jsonify({
             "message": "Password cannot be empty. Please check again.",
