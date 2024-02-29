@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from database import User, db, ForgotPassword
 from validation import resgister_validation, login_validation, forgot_password_validation, forgot_password_verification_validation
 from otp_sending import otp, expired_in
+import hashlib
 
 # create the app
 app = Flask(__name__)
@@ -41,13 +42,13 @@ def register():
         phone_number=request.form.get("phone_number", "")
         email = request.form.get("email", "")
 
-        data = resgister_validation(user_name, password, first_name, last_name, email)
+        data = resgister_validation(user_name, password, first_name, last_name, email, phone_number, address, age)
         
         # Write data into database
         if request.method == "POST":
             user = User(
                 user_name=user_name,
-                password=password,
+                password=hashlib.sha256(password.encode('utf-8')).hexdigest(),
                 first_name=first_name,
                 last_name=last_name,
                 age=age,
@@ -107,9 +108,8 @@ def reset_password():
         new_password = request.form.get("password", "")
         
         user_forgot = db.session.query(ForgotPassword).filter_by(otp=otp).first()
-        user_id = db.session.query(User).first()
         
-        data = forgot_password_verification_validation(otp, expired_in, new_password)
+        data = forgot_password_verification_validation(otp, new_password)
         
         if user_forgot is None:
             return jsonify({
@@ -118,7 +118,7 @@ def reset_password():
             })
         
         if data.json["success"] != False:
-            user_id.password = new_password
+            user_forgot.user.password = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
             user_forgot.is_confirmed_otp = True
             
         db.session.delete(user_forgot)

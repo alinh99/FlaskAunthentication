@@ -3,8 +3,9 @@ from flask import jsonify
 from database import User, ForgotPassword
 from otp_sending import send_email
 from datetime import datetime
+import hashlib
 
-def resgister_validation(user_name, password, first_name, last_name, email):
+def resgister_validation(user_name, password, first_name, last_name, email, phone, address, age):
     # User validation
     if db.session.query(db.exists().where(User.user_name == user_name)).scalar():
         return jsonify({
@@ -62,6 +63,14 @@ def resgister_validation(user_name, password, first_name, last_name, email):
     
     return jsonify({
         "message": "Register Successfully",
+        "email": email,
+        "password": hashlib.sha256(password.encode("utf-8")).hexdigest(),
+        "user_name": user_name,
+        "first_name": first_name,
+        "last_name": last_name,
+        "age": age,
+        "address": address,
+        "phone": phone,
         "success": True
     })
 
@@ -81,7 +90,7 @@ def login_validation(user_name, password, email):
             "success": False
         })
     
-    if user.password != password:
+    if user.password != hashlib.sha256(password.encode('utf-8')).hexdigest():
         return jsonify({
             "message": "Your password is wrong. Please check again.",
             "success": False
