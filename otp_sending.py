@@ -15,7 +15,7 @@ def generate_otp():
     return random.randrange(100000, 999999)
 
 def expire_time():
-    return datetime.now() + timedelta(minutes=30)
+    return datetime.now() + timedelta(days=1)
 
 def expire_time_convert_to_hour():
     time = int((expire_time() - datetime.now()).total_seconds() / 3600)
@@ -32,7 +32,7 @@ def get_email_by_user_id():
 
 def get_name_by_user_id():
     user_id = get_user_id()
-    full_name = user_id.last_name + user_id.first_name
+    full_name = user_id.first_name + " " + user_id.last_name
     return full_name
 
 otp = generate_otp()
